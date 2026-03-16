@@ -7,6 +7,7 @@ import { randomUUID } from "crypto"; // ✅ use UUID
 export async function GET(req) {
   try {
     await connectDB();
+    
 
     const { searchParams } = new URL(req.url);
     const supplierId = searchParams.get("supplierId");
@@ -36,6 +37,7 @@ export async function POST(req) {
     const {
       supplierName,
       companyName,
+      gstin,
       address,
       district,
       state,
@@ -44,9 +46,12 @@ export async function POST(req) {
       godownNumber,
       email,
     } = body;
+        const sanitizedNumber = (companyNumber && companyNumber.trim().length === 10) 
+      ? companyNumber.trim() 
+      : undefined;
 
     // Required fields validation
-    if (!supplierName || !companyName || !address || !district || !state || !supplierMobileNumber || !email) {
+    if (  !companyName || !gstin) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -60,11 +65,12 @@ export async function POST(req) {
       supplierId,               // Auto-generated
       supplierName,
       companyName,
+      gstin,
       address,
       district,
       state,
       supplierMobileNumber,
-      companyNumber: companyNumber || "",
+      companyNumber: sanitizedNumber,
       godownNumber: godownNumber || "",
       email,
     });

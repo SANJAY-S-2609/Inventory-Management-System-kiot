@@ -19,6 +19,9 @@ const DistributedItemsSchema = new mongoose.Schema(
       required: true,
       enum: [
         "pcs",
+        "number",
+        "length",
+        "roll",
         "kg",
         "g",
         "liter",
@@ -57,7 +60,7 @@ const DistributedItemsSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps : true,
   }
 );
 

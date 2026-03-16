@@ -219,3 +219,30 @@
         width: 100% !important;
     }
 }
+
+.search-input {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 250px;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Ensure header wraps correctly on mobile */
+@media (max-width: 768px) {
+  .show-items-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 15px;
+  }
+  .search-input {
+    width: 100%;
+  }
+}

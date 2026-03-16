@@ -32,13 +32,12 @@ const ItemDetailsSchema = new mongoose.Schema(
 
     companyName: {
       type: String,
-      required: true,
       trim: true,
+      required:true,
     },
 
     companyNumber: {
       type: String,
-      required: true,
       match: [/^[0-9]{10}$/, "Phone number must be exactly 10 digits"],
     },
 
@@ -46,7 +45,10 @@ const ItemDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        "pcs",
+       "pcs",
+        "number",
+        "length",
+        "roll",
         "kg",
         "g",
         "liter",
@@ -97,6 +99,8 @@ const ItemDetailsSchema = new mongoose.Schema(
         "Painting items",
         "Carpentry items",
         "Sanitation items",
+        "Hardware items",
+        "Scavenger items",
       ],
     },
 

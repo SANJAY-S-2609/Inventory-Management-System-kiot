@@ -68,10 +68,10 @@ export default function AddPurchaseHistory() {
     e.preventDefault();
 
     // ✅ Safe validation
-    if (!formData.companyNumber || formData.companyNumber.length !== 10) {
-      alert("Please provide a valid 10-digit phone number");
-      return;
-    }
+if (formData.companyNumber && formData.companyNumber.length > 0 && formData.companyNumber.length !== 10) {
+  alert("Phone number must be exactly 10 digits (or leave it empty)");
+  return;
+}
 
     if (itemIds.length === 0) {
       alert("No items found for invoice");

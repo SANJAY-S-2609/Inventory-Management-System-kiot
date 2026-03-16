@@ -5,6 +5,7 @@ import "./addSupplier.css";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import * as XLSX from "xlsx";
 
 function AddSupplier() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ function AddSupplier() {
   const [form, setForm] = useState({
     supplierName: "",
     companyName: "",
+    gstin: "", 
     address: "",
     district: "",
     state: "",
@@ -26,9 +28,71 @@ function AddSupplier() {
 
   const [loading, setLoading] = useState(false);
 
+  // --- EXCEL UPLOAD HANDLERS ---
+const handleExcelUpload = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const bstr = evt.target.result;
+    const wb = XLSX.read(bstr, { type: "binary" });
+    const wsname = wb.SheetNames[0];
+    const ws = wb.Sheets[wsname];
+    
+    // 1. Get raw data from Excel
+    const rawData = XLSX.utils.sheet_to_json(ws);
+
+    // 2. Map data based on your specific Excel structure (mapping Col A and Col D)
+// Inside handleExcelUpload function
+const mappedData = rawData.map((item) => ({
+  // We use the exact headers from your Excel image
+  supplierName: item.supplierName || "", 
+  companyName: item.supplierName || "", // Mapping same name to companyName
+  gstin: item["Gst Uin"] || item.gstin || "", 
+  email: item.email || "",
+  supplierMobileNumber: item.supplierMobileNumber || "",
+  companyNumber: item.companyNumber || "",
+  address: item.address || "",
+  district: item.district || "",
+  state: item.state || "",
+  godownNumber: item.godownNumber || "",
+}));
+    const rawDat = XLSX.utils.sheet_to_json(ws);
+    console.log("EXCEL RAW DATA PREVIEW:", rawDat[0]); // Check your browser console (F12) for this!
+
+    uploadSuppliers(mappedData);
+  };
+  reader.readAsBinaryString(file);
+};
+
+  const uploadSuppliers = async (data) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/bulk-supplier-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        alert("✅ Supplier List Uploaded Successfully!");
+        router.push("/dashboard/Supplier");
+      } else {
+        const errData = await res.json();
+        alert(`❌ Error: ${errData.message}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error connecting to server.");
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm({ ...form,[name]: name === "gstin" ? value.toUpperCase() : value 
+});
   };
 
   useEffect(() => {
@@ -42,6 +106,8 @@ function AddSupplier() {
         setForm({
           supplierName: data.supplierName || "",
           companyName: data.companyName || "",
+          gstin: data.gstin || "", // <--- ADD THIS
+
           address: data.address || "",
           district: data.district || "",
           state: data.state || "",
@@ -118,7 +184,28 @@ const handleSubmit = async (e) => {
               {isEditMode ? "Edit Supplier" : "New Supplier Registration"}
             </h2>
           </div>
+           {/* ADD THIS SECTION BELOW */}
+          {!isEditMode && (
+            <div className="excel-upload-container">
+              <input
+                type="file"
+                id="supplierExcel"
+                hidden
+                accept=".xlsx, .xls"
+                onChange={handleExcelUpload}
+              />
+              <label
+                htmlFor="supplierExcel"
+                className="btn btn-success btn-sm fw-bold shadow-sm"
+                style={{ cursor: "pointer", padding: "8px 15px", borderRadius: "8px", backgroundColor: "#28a745", color: "#fff", border: "none" }}
+              >
+                Upload Excel List
+              </label>
+            </div>
+          )}
+          
         </div>
+        
 
         <hr className="form-divider" />
 
@@ -126,13 +213,13 @@ const handleSubmit = async (e) => {
           {/* Section 1: Basic Info */}
           <div className="form-row">
             <div className="input-field">
-              <label>Supplier Name *</label>
+              <label>Supplier Name </label>
               <input
                 name="supplierName"
                 value={form.supplierName}
                 type="text"
                 onChange={handleChange}
-                required
+                
               />
             </div>
             <div className="input-field">
@@ -146,28 +233,27 @@ const handleSubmit = async (e) => {
               />
             </div>
           </div>
-
           {/* Section 2: Contact Info */}
           <div className="form-row">
+            
             <div className="input-field">
-              <label>Supplier Mobile *</label>
+              <label>Supplier Mobile </label>
               <input
                 name="supplierMobileNumber"
                 type="tel"
                 value={form.supplierMobileNumber}
-                placeholder="10-15 digits"
                 onChange={handleChange}
-                required
+                
               />
             </div>
             <div className="input-field">
-              <label>Email Address *</label>
+              <label>Email Address </label>
               <input
                 name="email"
                 value={form.email}
                 type="email"
                 onChange={handleChange}
-                required
+                
               />
             </div>
           </div>
@@ -197,38 +283,53 @@ const handleSubmit = async (e) => {
           {/* Section 5: Location */}
           <div className="form-row">
             <div className="input-field">
-              <label>District *</label>
+              <label>District </label>
               <input
                 name="district"
                 type="text"
                 value={form.district}
                 onChange={handleChange}
-                required
+                
               />
             </div>
             <div className="input-field">
-              <label>State *</label>
+              <label>State </label>
               <input
                 name="state"
                 type="text"
                 value={form.state}
                 onChange={handleChange}
-                required
               />
             </div>
           </div>
 
           <div className="form-row">
             <div className="input-field">
-              <label>Full Address *</label>
+              <label>Full Address </label>
               <input
                 name="address"
                 type="text"
                 value={form.address}
                 onChange={handleChange}
-                required
+                
               />
             </div>
+                      <div className="form-row">
+  <div className="input-field">
+    <label>GSTIN / UIN *</label>
+    <input
+      name="gstin"
+      value={form.gstin}
+      type="text"
+      placeholder="e.g. 27AAAAA0000A1Z5"
+      onChange={handleChange}
+      style={{ textTransform: 'uppercase' }} // Visual helper for user
+      maxLength={15}
+      required
+    />
+  </div>
+</div>
+
           </div>
 
           <div className="form-actions">

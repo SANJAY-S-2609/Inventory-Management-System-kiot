@@ -24,11 +24,13 @@ const ItemsSchema  = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        "Plumbing items",
+       "Plumbing items",
         "Electrical items",
         "Painting items",
         "Carpentry items",
-        "Sanitation items"
+        "Sanitation items",
+        "Hardware items",
+        "Scavenger items",
         ],
     },
 
@@ -36,8 +38,20 @@ const ItemsSchema  = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        "pcs","kg","g","liter","ml",
-        "m","cm","mm","box","packet","dozen"
+        "pcs",
+        "number",
+        "length",
+        "roll",
+        "kg",
+        "g",
+        "liter",
+        "ml",
+        "m",
+        "cm",
+        "mm",
+        "box",
+        "packet",
+        "dozen",
       ],
     },
 

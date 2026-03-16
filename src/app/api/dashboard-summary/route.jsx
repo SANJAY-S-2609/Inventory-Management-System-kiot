@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import ItemDetails from "../../../models/ItemDetails";
 import DistributedItems from "../../../models/DistributedItems";
+import Items from "../../../models/Items"; // Make sure the path is correct
 
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
@@ -13,6 +14,7 @@ export async function GET(request) {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const viewType = searchParams.get("viewType") || "weekly";
+    const productMaster = await Items.find({}); // <--- ADD THIS LINE
 
     // 1. Get all data (Newest items first)
     const allItems = await ItemDetails.find({}).sort({ createdAt: -1 });
@@ -106,7 +108,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       stats: {
-        totalProducts: finalList.length,
+        totalProducts: productMaster.length, // This will show 47 (the actual database count)
         totalStock: finalList.reduce((acc, curr) => acc + curr.remaining, 0),
         categories: [...new Set(allItems.map((i) => i.category))].length,
       },

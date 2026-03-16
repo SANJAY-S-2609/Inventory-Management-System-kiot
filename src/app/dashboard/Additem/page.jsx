@@ -93,7 +93,7 @@ function Additem() {
               supplierId: newSup.supplierId,
               companyName: newSup.companyName,
               companyNumber:
-                newSup.companyNumber || newSup.supplierMobileNumber,
+                newSup.companyNumber || newSup.supplierMobileNumber || "",
             };
 
             // Update the form: Draft + New Supplier info
@@ -254,6 +254,7 @@ function Additem() {
 
   const handleSupplierChange = (e) => {
     const selectedId = e.target.value;
+    let newErrors = { ...errors }; // Access current errors
 
     // NEW LOGIC: Handle "Add New" selection
     if (selectedId === "ADD_NEW") {
@@ -297,10 +298,19 @@ function Additem() {
     const supplier = supplierList.find((s) => s.supplierId === selectedId);
 
     if (supplier) {
+      const num = supplier.companyNumber || supplier.supplierMobileNumber || "";
+      if (num && num.length !== 10) {
+        newErrors.companyNumber =
+          "⚠️ Supplier's saved number is invalid (must be 10 digits)";
+      } else {
+        delete newErrors.companyNumber;
+      }
+
       const supplierData = {
         supplierId: supplier.supplierId,
         companyName: supplier.companyName,
-        companyNumber: supplier.companyNumber || supplier.supplierMobileNumber,
+        companyNumber:
+          supplier.companyNumber || supplier.supplierMobileNumber || "",
         purchaseDate: formData.purchaseDate, // Keep currently selected date
       };
       setFormData((prev) => ({ ...prev, ...supplierData }));
@@ -315,6 +325,7 @@ function Additem() {
         companyNumber: "",
       }));
     }
+    setErrors(newErrors); // Update the error state
   };
 
   const handleNameFocus = async () => {
@@ -330,7 +341,7 @@ function Additem() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newErrors = { ...errors };
-    
+
     if (name === "name" || name === "hsnSac") {
       setSelectedItemId(null);
     }
@@ -484,11 +495,6 @@ function Additem() {
 
     if (!formData.purchaseDate) {
       alert("Please select a date.");
-      return;
-    }
-
-    if (formData.companyNumber.length !== 10) {
-      alert("Give the proper phone number (10 digits)");
       return;
     }
 
@@ -708,6 +714,8 @@ function Additem() {
                 <option>Painting items</option>
                 <option>Carpentry items</option>
                 <option>Sanitation items</option>
+                <option>Hardware items</option>
+                <option>Scavenger items</option>
               </select>
             </div>
           </div>
@@ -728,6 +736,9 @@ function Additem() {
                 <option value="">Select Unit</option>
                 <option>pcs</option>
                 <option>kg</option>
+                <option>number</option>
+                <option>roll</option>
+                <option>length</option>
                 <option>g</option>
                 <option>liter</option>
                 <option>ml</option>
@@ -887,6 +898,9 @@ function Additem() {
                     className="form-select"
                     value={formData.supplierId}
                     onChange={handleSupplierChange}
+                    style={
+                      errors.companyNumber ? { border: "2px solid red" } : {}
+                    } // Highlight red if error
                     disabled={isNavigationLocked}
                     required
                   >
@@ -912,6 +926,14 @@ function Additem() {
                       + Add New Supplier
                     </option>
                   </select>
+                  {errors.companyNumber && (
+                    <div
+                      className="text-danger fw-bold mt-1"
+                      style={{ fontSize: "0.85rem" }}
+                    >
+                      {errors.companyNumber}
+                    </div>
+                  )}
                   {/* If OTHER is selected, let them type the name */}
                   {formData.supplierId === "OTHER" && (
                     <div className="mt-2">

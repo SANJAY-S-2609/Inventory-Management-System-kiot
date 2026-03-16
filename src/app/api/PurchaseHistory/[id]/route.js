@@ -103,7 +103,7 @@ export async function PUT(req, { params }) {
           invoiceNumber: newInvoice,
           supplierId: newSupplierId,
           companyName: supplierInfo.companyName,
-          companyNumber: supplierInfo.companyNumber || supplierInfo.phoneNumber // Adjust based on your Supplier schema field name
+          companyNumber: supplierInfo.companyNumber || supplierInfo.phoneNumber || ""// Adjust based on your Supplier schema field name
         } 
       }
     );

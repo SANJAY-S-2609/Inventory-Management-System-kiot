@@ -15,6 +15,10 @@ export async function POST(req) {
     let totalBefore = 0;
     let totalTax = 0;
 
+    const sanitizedCompanyNumber = (supplier.companyNumber && String(supplier.companyNumber).length === 10) 
+      ? supplier.companyNumber 
+      : null;
+
     for (const item of items) {
       const id = item.existingItemId || randomUUID();
 
@@ -28,7 +32,7 @@ export async function POST(req) {
         hsnSac: Number(item.hsnSac),
         supplierId: supplier.supplierId,
         companyName: supplier.companyName,
-        companyNumber: supplier.companyNumber,
+        companyNumber: sanitizedCompanyNumber,
         Date: dateValue ? new Date(dateValue) : new Date(), 
 
       });
@@ -74,5 +78,6 @@ export async function POST(req) {
     return NextResponse.json({ message: "Saved" }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ message: err.message }, { status: 500 });
+ 
   }
 }

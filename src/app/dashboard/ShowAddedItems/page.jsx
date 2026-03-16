@@ -1,15 +1,17 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import * as XLSX from "xlsx"; 
-import jsPDF from "jspdf"; 
-import autoTable from "jspdf-autotable"; 
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import "./showAddedItems.css";
 
 function ShowAddedItems() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [searchTerm, setSearchTerm] = useState("");
+
+
   // States for Filtering
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [stockThreshold, setStockThreshold] = useState("");
@@ -57,7 +59,7 @@ function ShowAddedItems() {
     setShowPasswordModal(true);
   };
 
-// 1. Verify Password against Database (Login)
+  // 1. Verify Password against Database (Login)
   const handlePasswordSubmit = async () => {
     try {
       const res = await fetch("/api/Admin-security", {
@@ -81,7 +83,7 @@ function ShowAddedItems() {
   // 2. Verify OTP then Show Reset UI
   const verifyOtp = () => {
     if (timer === 0) return alert("OTP Expired!");
-    
+
     if (otpInput.join("") === serverOtp) {
       setShowOtpModal(false);
       setShowNewPassModal(true); // Switch to the Reset Password Modal
@@ -149,13 +151,15 @@ function ShowAddedItems() {
   const filteredItems = items.filter((item) => {
     const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
     const matchesStock = stockThreshold === "" || item.quantity <= Number(stockThreshold);
-    return matchesCategory && matchesStock;
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesCategory && matchesStock && matchesSearch;
   });
 
   const downloadExcel = () => {
     const excelData = filteredItems.map((item, index) => ({
       "S.No": index + 1, "Item Name": item.name, "Quantity": item.quantity,
-      "Per":item.perItemPrice, "Unit": item.unit, "Original Price": item.originalPrice,
+      "Per": item.perItemPrice, "Unit": item.unit, "Original Price": item.originalPrice,
       "Discount %": item.discountPercentage, "Total Amount": item.totalAmount,
       "Company Name": item.companyName, "Phone": item.companyNumber, "Category": item.category,
     }));
@@ -166,7 +170,7 @@ function ShowAddedItems() {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF('l', 'mm', 'a4'); 
+    const doc = new jsPDF('l', 'mm', 'a4');
     doc.text("Inventory: Added Items List", 14, 15);
     const tableColumn = ["S.No", "Item Name", "Qty", "Unit", "Price", "Disc%", "Total", "Company", "Phone", "Category"];
     const tableRows = filteredItems.map((item, index) => [
@@ -183,9 +187,9 @@ function ShowAddedItems() {
         <div className="custom-modal-overlay">
           <div className="custom-modal">
             <h3>Authorization Required</h3>
-            <input 
-              type="password" 
-              placeholder="Enter Admin Password" 
+            <input
+              type="password"
+              placeholder="Enter Admin Password"
               className="modal-input"
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
@@ -216,8 +220,8 @@ function ShowAddedItems() {
                 />
               ))}
             </div>
-            <p className="timer-display">Time left: <span style={{color: timer < 10 ? 'red' : 'green'}}>{timer}s</span></p>
-            
+            <p className="timer-display">Time left: <span style={{ color: timer < 10 ? 'red' : 'green' }}>{timer}s</span></p>
+
             <button className="modal-btn-primary" onClick={verifyOtp} disabled={timer === 0}>Verify OTP</button>
             {timer === 0 && (
               <button className="modal-btn-forgot" onClick={generateAndSendOtp}>Resend Code</button>
@@ -232,9 +236,9 @@ function ShowAddedItems() {
           <div className="custom-modal">
             <h3>Reset Admin Password</h3>
             <p>Verification successful. Set your new password below:</p>
-            <input 
-              type="password" 
-              placeholder="Enter New Password" 
+            <input
+              type="password"
+              placeholder="Enter New Password"
               className="modal-input"
               value={newPasswordInput}
               onChange={(e) => setNewPasswordInput(e.target.value)}
@@ -263,13 +267,23 @@ function ShowAddedItems() {
               <input type="number" placeholder="Qty less than..." className="filter-input" value={stockThreshold} onChange={(e) => setStockThreshold(e.target.value)} />
             </div>
           </div>
+          {/* --- ADD THIS SEARCH BOX SECTION --- */}
+          <div className="search-container" style={{ marginRight: '20px' }}>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search item name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
 
           <div className="header-btns">
             <button className="download-btn excel-btn" onClick={downloadExcel}>📊 Excel Export</button>
             <button className="download-btn pdf-btn" onClick={downloadPDF}>📄 PDF Export</button>
           </div>
         </div>
-      
+
         <div className="show-items-table-wrapper">
           <table className="show-items-table">
             <thead>
